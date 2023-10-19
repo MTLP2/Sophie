@@ -1,10 +1,25 @@
+/*********************************************************************************
+ *
+ * Ce fichier contient toutes les fonctions nécessaires à la page index.html
+ *
+ *********************************************************************************/
+
+
+
+/*************************************************************************/
+/****************************** VARIABLES GLOBALES ***********************/
+/*************************************************************************/
+const body = document.querySelector("body");
+
+
+
+/*************************************************************************/
+/****************************** AFFICHAGE DES PROJETS ********************/
+/*************************************************************************/
 /**
  * Fonction "projectShow" qui permet d'afficher les projets sur la homepage.
  * @param {Array} tab Tableau des projets
  */
-
-const body = document.querySelector("body");
-
 async function projectShow(){
 
   //***************************************
@@ -13,12 +28,10 @@ async function projectShow(){
   const gallery = document.querySelector(".gallery");
   const response = await fetch(`http://localhost:5678/api/works/`);
   const data = await response.json();
-  console.log(data);
-//***************************************
 
+  // Affichage des éléments de data
   let galleryContent = "";
   for (let i = 0; i < data.length; i++) {
-    // console.log(data[i]);
     galleryContent +=
     `
     <figure>
@@ -30,6 +43,13 @@ async function projectShow(){
 }
 
 
+/*************************************************************************/
+/****************************** FILTRE DES PROJETS ***********************/
+/*************************************************************************/
+/**
+ * Fonction "projectShowFilter" qui permet de filtrer l'affichage des projets.
+ * @param {Array} data 
+ */
 async function projectShowFilter(data){
 
   //***************************************
@@ -37,7 +57,7 @@ async function projectShowFilter(data){
   //***************************************
   const gallery = document.querySelector(".gallery");
   console.log(data);
-//***************************************
+  //***************************************
 
   let galleryContent = "";
   for (let i = 0; i < data.length; i++) {
@@ -51,18 +71,18 @@ async function projectShowFilter(data){
   }
   gallery.innerHTML = galleryContent;
 }
-//---------------------------------------
 
-//***************************************
-//********** Création du contenu Edit ***
-//***************************************
+
+
+/*************************************************************************/
+/****************************** MODIFICATION DU DOM : MODE EDIT **********/
+/*************************************************************************/
 document.addEventListener("DOMContentLoaded", function() {
-  // Votre code ici sera exécuté après que le DOM soit complètement chargé
+  // Le code sera exécuté après que le DOM soit complètement chargé
   let acces = localStorage.getItem("accessToken");
-  console.log(acces);
 
+  // Code éxécuté si absence du token : génération des éléments vide
   if (acces == null){
-    console.log('ok');
     document.querySelector('.modeEdition').innerHTML = `<div></div>`;
     document.querySelector('.titleEdit').innerHTML = `<div></div>`;
     document.querySelector('header nav ul').innerHTML =`
@@ -73,7 +93,9 @@ document.addEventListener("DOMContentLoaded", function() {
     `
   }
 
+  // Code éxécuté si présence du token : génération des éléments complets
   else if (acces = "true") {
+    // Création du header édition
     document.querySelector('.modeEdition').innerHTML = 
     `
     <div class="edit-mode">
@@ -81,6 +103,8 @@ document.addEventListener("DOMContentLoaded", function() {
       <p>Mode édition</p>
     </div>
     `;
+
+    // Modification de la zone de filtre
     document.querySelector('.titleEdit').innerHTML = 
     `
     <h2>Mes Projets</h2>
@@ -91,6 +115,8 @@ document.addEventListener("DOMContentLoaded", function() {
 				</div>
 			</div>
     `
+
+    // Modification de la navbar
     document.querySelector('header nav ul').innerHTML =`
     <li><a href="index.html#portfolio">Projets</a></li>
 		<li><a href="index.html#contact">Contact</a></li>
@@ -98,25 +124,36 @@ document.addEventListener("DOMContentLoaded", function() {
 		<li><img src="./assets/icons/instagram.png" alt="Instagram"></li>
     `
   }
-  
+
+  // Fonctionnalité "Logout" de la navbar
   document.querySelector(".logout").addEventListener('click', (e) =>{
     localStorage.removeItem('userToken');
     localStorage.removeItem('accessToken');
     location.reload();
-    
   })
+
+  // Appel de la fonction "showModal1" pour générer la première modale d'édition
   document.querySelector("#editPortfolio").addEventListener('click', (e) =>{
+    console.log("test");
     showModal1()
     body.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
   })
 });
 
 
-//***************************************
-//********** Création de modal 1 ********
-//***************************************
-function showModal1() {
 
+/*************************************************************************/
+/****************************** CREATION DE LA MODALE 1 ******************/
+/*************************************************************************/
+/**
+ * Fonction "showModal1" en charge des fonctionnalités de la modale 1
+ */
+async function showModal1() {
+  // Récupérations des données de l'API pour affichage
+  const newresponse = await fetch(`http://localhost:5678/api/works/`);
+  const newdata = await newresponse.json();
+
+  // Création du contenu de la modale
   document.querySelector('.edit-1').innerHTML = 
   `
   <i class="fa-solid fa-xmark" id="closeEdit-1"></i>
@@ -128,8 +165,9 @@ function showModal1() {
     <button>Ajouter une photo</button>
   </div>
   `
-  for (let i = 0; i < data.length; i++) {
-    const img = data[i].imageUrl;
+  // Création d'une "card" par item du tableau data de l'API
+  for (let i = 0; i < newdata.length; i++) {
+    const img = newdata[i].imageUrl;
     document.querySelector(".img-area").innerHTML += 
     `
     <div class="img-area-display">
@@ -137,12 +175,12 @@ function showModal1() {
       <i id = "${i}" class="fa-solid fa-trash-can trash"></i>
     </div>
     `
-    // Inspecter tous les éléments <i> ajoutés
+    // Fonctionnalité "suppression" des cards
     const allIcons = document.querySelectorAll('.img-area-display i');
     allIcons.forEach((icon, index) => {
         icon.addEventListener("click", ()=>{
         const Token = localStorage.getItem("userToken");
-        fetch(`http://localhost:5678/api/works/${data[index].id}`, {
+        fetch(`http://localhost:5678/api/works/${newdata[index].id}`, {
           method: 'DELETE',
           headers: {
             'Accept': 'application/json',
@@ -150,31 +188,26 @@ function showModal1() {
           },
         })
         .then(data => {
-          body.style.backgroundColor = "transparent";
+          body.style.backgroundColor = "rgba(255, 254, 248, 1)";
           projectShow();
           document.querySelector(".edit-1").innerHTML = "";
         })
         .catch(error => {
           console.error('Erreur:', error);
         });
-
-
       })
   });
 
 }
 
-  /**Fermeture de la modal au click de la croix* */
-
-  
+  // Fermeture de la modale au click sur la croix
   document.querySelector('.edit-1').style.display = "block"
-  
-  /**Fermeture de la modal au click de la croix* */
   document.querySelector("#closeEdit-1").addEventListener("click", ()=>{
     document.querySelector(".edit-1").innerHTML = "";
-    body.style.backgroundColor = "transparent";
+    body.style.backgroundColor = "rgba(255, 254, 248, 1)";
   })
 
+  // Ouverture de la modale 2 au click sur le bouton et fermeture de la modale 1
   document.querySelector('#btn-area1').addEventListener("click", () => {
     document.querySelector(".edit-1").innerHTML = "";
     showModal2()
@@ -183,14 +216,15 @@ function showModal1() {
 
 
 
-//***************************************
-//********** Création de modal 2 ********
-//***************************************
+/*************************************************************************/
+/****************************** CREATION DE LA MODALE 2 ******************/
+/*************************************************************************/
+/**
+ * Fonction "showModal2" en charge des fonctionnalités de la modale 2
+ */
 
 async function showModal2() {
-  
-
-
+// Création du contenu de la modale
   document.querySelector('.edit-2').innerHTML = 
   `
   <form class="edit-2">
@@ -209,7 +243,6 @@ async function showModal2() {
 
     <label for="edit2Categorie">Catégorie</label>
     <select id="categorySelect" name="categories" required>
-      <option value="categorie">Choisissez une catégorie</option>
       <option value="1">Objets</option>
       <option value="2">Appartements</option>
       <option value="3">Hôtels & Restaurants</option>
@@ -219,14 +252,15 @@ async function showModal2() {
     </div>
   </form>
   `
-  /**Retour à la modale 1**/
+
+  // Retour à la modale 1 au click sur la flèche
   document.querySelector("#returnEdit-1").addEventListener("click", () =>{
     document.querySelector(".edit-2").innerHTML = "";
     showModal1();
   })
   
+  // Modification de l'image dans l'input file
   const imageUpload = document.getElementById('imageUpload');
-  /**Modification de l'image dans l'input file**/
   imageUpload.addEventListener('change', function() {
       const file = this.files[0];
       if (file) {
@@ -239,6 +273,7 @@ async function showModal2() {
       }
   });
 
+  // Récupération des éléments du formulaire pour envoie à l'API
   document.querySelector('.edit-2').addEventListener('submit', (e) =>{
     e.preventDefault();
 
@@ -271,29 +306,26 @@ async function showModal2() {
     .catch(error => {
       console.error('Erreur:', error);
     });
-});
+  });
 
-
-  /**Fermeture de la modal au click de la croix**/
+  // Fermeture de la modale au click sur la croix
   document.querySelector("#closeEdit-2").addEventListener("click", ()=>{
     document.querySelector(".edit-2").innerHTML = ""
-    body.style.backgroundColor = "transparent";
+    body.style.backgroundColor = "rgba(255, 254, 248, 1)";
   })
-
   document.querySelector('.edit-2').style.display = "block"
-
 };
 
 
 
+/*************************************************************************/
+/****************************** GENERATION DES PROJETS *******************/
+/*************************************************************************/
+/**
+ * Fonction "projectShow" en charge de la génération des projets
+ */
 const response = await fetch(`http://localhost:5678/api/works/`);
 const data = await response.json();
-
-
-
-
-//***************************************
-
 
 projectShow();
 const gallery = document.querySelector(".gallery");
@@ -332,13 +364,11 @@ document.querySelector(".filterHotelsAndRestaurants").addEventListener("click", 
 
 
 
-//***************************************
-//********** REGEX CONTACT FORM *********
-//***************************************
+/*************************************************************************/
+/****************************** REGEX CONTACT FORM ***********************/
+/*************************************************************************/
 
 const contactMsg = document.querySelector(".contactMsg");
-
-
 
 document.querySelector(".contactForm").addEventListener("submit", () =>{
   const emailInput = document.getElementById("email");
