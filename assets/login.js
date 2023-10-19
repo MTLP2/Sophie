@@ -1,3 +1,9 @@
+/*********************************************************************************
+ *
+ * Ce fichier contient toutes les fonctions nécessaires au login
+ *
+ *********************************************************************************/
+
 const url = "http://localhost:5678/api/users/login";
 
 document.querySelector('#login form').addEventListener('submit', (e)=> {
